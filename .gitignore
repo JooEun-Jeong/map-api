@@ -2,3 +2,4 @@ gradVenv
 cropped_images/
 auto_cropped_images/
 server/.env
+qgis/images/*.tif
