@@ -191,6 +191,78 @@ def get_coordinates_from_past_address():
             return jsonify(result)
         else:
             return jsonify({'error': 'No matching row found for the given _1 and _2 values'}), 404
+        
+@app.route('/get_current_address_from_past_address', methods=['POST'])
+def get_current_address_from_past_address():
+    # 요청 JSON에서 과거 주소 정보 가져오기
+    data = request.get_json()
+    past_address = data.get('past_address')
+
+    if not past_address:
+        return jsonify({'error': 'past_address is required'}), 400
+
+    # 과거 주소에서 _1과 _2 값 추출
+    try:
+        parts = past_address.split()
+        _1_value = parts[-2]
+        _2_value = int(parts[-1])
+    except (IndexError, ValueError):
+        return jsonify({'error': 'Invalid past_address format'}), 400
+
+    # _1과 _2 값에 해당하는 좌표를 조회
+    with engine.connect() as connection:
+        query = f"""
+            SELECT wkb_geometry
+            FROM dangsan
+            WHERE _1 = '{_1_value}' AND _2 = {_2_value}
+            LIMIT 1
+        """
+        try:
+            df = gpd.read_postgis(query, connection, geom_col='wkb_geometry')
+        except ValueError:
+            return jsonify({'error': 'Failed to retrieve data from table dangsan'}), 500
+
+        if not df.empty:
+            # 좌표 정보 추출
+            geom = df['wkb_geometry'].iloc[0]
+            if isinstance(geom, MultiPolygon):
+                centroid = geom.centroid
+                longitude, latitude = centroid.x, centroid.y
+            else:
+                longitude, latitude = geom.x, geom.y
+
+            # Kakao 좌표-주소 변환 API 호출
+            url = 'https://dapi.kakao.com/v2/local/geo/coord2address.json'
+            headers = {
+                'Authorization': f'KakaoAK {KAKAO_API_KEY}'
+            }
+            params = {
+                'x': longitude,
+                'y': latitude
+            }
+
+            response = requests.get(url, headers=headers, params=params)
+
+            if response.status_code != 200:
+                return jsonify({'error': 'Failed to get address from Kakao API'}), response.status_code
+
+            data = response.json()
+            if 'documents' not in data or len(data['documents']) == 0:
+                return jsonify({'error': 'No address found for the given coordinates'}), 404
+
+            # 주소 정보 추출
+            address = data['documents'][0]['address']
+            road_address = data['documents'][0].get('road_address')
+
+            result = {
+                'current_address': address['address_name']
+            }
+            if road_address:
+                result['road_address'] = road_address['address_name']
+
+            return jsonify(result)
+        else:
+            return jsonify({'error': 'No matching row found for the given past address'}), 404
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5000)
