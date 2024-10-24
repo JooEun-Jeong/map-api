@@ -4,8 +4,11 @@ import os
 from dotenv import load_dotenv
 import pandas as pd
 import geopandas as gpd
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, text
 from shapely.geometry import MultiPolygon
+import sqlparse
+from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy.orm import sessionmaker
 
 # .env 파일에서 환경 변수 로드
 load_dotenv()
@@ -19,15 +22,44 @@ KAKAO_API_KEY = os.getenv('KAKAO_API_KEY')
 DB_URL = os.getenv('DB_URL')
 engine = create_engine(DB_URL)
 
+Session = sessionmaker(bind=engine)
 # SQL 파일 경로 설정
 sql_file_path = './dangsan.sql'
+
 
 # SQL 파일 읽기 및 처리
 def load_sql_file(sql_file_path):
     with open(sql_file_path, 'r', encoding='utf-8') as file:
         sql_statements = file.read()
-    with engine.connect() as connection:
-        connection.execute(sql_statements)
+
+        # SQL 파일에서 여러 개의 SQL 문을 분리
+        statements = sqlparse.split(sql_statements)
+
+        is_development = os.getenv('ENV') == 'development'  # 환경 변수를 통해 개발 환경 확인
+
+        session = Session()  # 세션 생성
+        try:
+            for statement in statements:
+                if statement.strip():
+                    try:
+                        # 개발 환경에서는 특정 실행 불가능한 문장을 무시
+                        if is_development and statement.strip().lower().startswith(("create", "alter", "drop", "begin", "commit")):
+                            continue
+                        session.execute(text(statement))  # 수정된 부분
+                    except SQLAlchemyError as e:
+                        session.rollback()  # 오류 발생 시 롤백
+                        if is_development:
+                            print(f"Error executing statement: {statement}")
+                            print(str(e))
+                        else:
+                            # 운영 환경에서는 오류가 발생하면 중단
+                            raise e
+            session.commit()  # 모든 쿼리 성공 시 커밋
+        except SQLAlchemyError as e:
+            session.rollback()  # 트랜잭션 롤백
+            raise e
+        finally:
+            session.close()  # 세션 종료
 
 # 초기 SQL 파일 로드
 load_sql_file(sql_file_path)
