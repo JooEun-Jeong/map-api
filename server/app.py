@@ -5,6 +5,7 @@ from dotenv import load_dotenv
 import pandas as pd
 import geopandas as gpd
 from sqlalchemy import create_engine
+from shapely.geometry import MultiPolygon
 
 # .env 파일에서 환경 변수 로드
 load_dotenv()
@@ -145,6 +146,51 @@ def get_current_and_past_address():
     }
 
     return jsonify(result)
+
+
+@app.route('/get_coordinates_from_past_address', methods=['GET'])
+def get_coordinates_from_past_address():
+    # 요청 파라미터에서 컬럼 _1에 해당하는 토지 유형과 컬럼 _2에 해당하는 지번 값 가져오기
+    _1_value = request.args.get('category')
+    _2_value = request.args.get('jibun')
+    table_name = 'dangsan'
+
+    if not _1_value or not _2_value:
+        return jsonify({'error': '_1 and _2 values are required'}), 400
+
+    try:
+        _2_value = int(_2_value)
+    except ValueError:
+        return jsonify({'error': '_2 must be a valid integer'}), 400
+
+    # _1과 _2 값에 해당하는 좌표를 조회
+    with engine.connect() as connection:
+        query = f"""
+            SELECT wkb_geometry
+            FROM {table_name}
+            WHERE _1 = '{_1_value}' AND _2 = {_2_value}
+            LIMIT 1
+        """
+        try:
+            df = gpd.read_postgis(query, connection, geom_col='wkb_geometry')
+        except ValueError:
+            return jsonify({'error': f'Failed to retrieve data from table {table_name}'}), 500
+
+        if not df.empty:
+            # 좌표 정보 추출
+            geom = df['wkb_geometry'].iloc[0]
+            if isinstance(geom, MultiPolygon):
+                centroid = geom.centroid
+                longitude, latitude = centroid.x, centroid.y
+            else:
+                longitude, latitude = geom.x, geom.y
+            result = {
+                'latitude': latitude,
+                'longitude': longitude
+            }
+            return jsonify(result)
+        else:
+            return jsonify({'error': 'No matching row found for the given _1 and _2 values'}), 404
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5000)
