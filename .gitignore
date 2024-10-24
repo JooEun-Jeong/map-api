@@ -1,5 +1,5 @@
 gradVenv
-cropped_images/
-auto_cropped_images/
+Research/cropped_images/
+Research/auto_cropped_images/
 server/.env
 qgis/images/*.tif

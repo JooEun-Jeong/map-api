@@ -1,6 +1,4 @@
 # 이미지를 박스에 맞춰 자르기
-
-from PIL import Image
 import glob
 import os
 import re

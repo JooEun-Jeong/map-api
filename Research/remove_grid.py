@@ -22,9 +22,13 @@ else:
         lines = cv.HoughLinesP(edges, 1, np.pi / 180, 100, minLineLength=100, maxLineGap=10)
 
         # 4. 원본 이미지에서 검출된 직선을 제거
+        # 모든 직선(기울기가 일정한)을 흰색으로 덮음으로써 삭제합니다.
         if lines is not None:
             for line in lines:
                 x1, y1, x2, y2 = line[0]
+                # 직선의 기울기를 계산하여 모든 직선을 제거
+                slope = np.abs((y2 - y1) / (x2 - x1 + 1e-6))  # 기울기 계산
+                # 기울기 상관없이 검출된 모든 직선을 지움
                 cv.line(img, (x1, y1), (x2, y2), (255, 255, 255), 2)  # 흰색 선으로 격자를 지웁니다
 
         # 5. 모폴로지 연산(침식 + 팽창)을 사용하여 작은 노이즈 제거
@@ -37,6 +41,7 @@ else:
         cv.destroyAllWindows()
 
         # 처리된 이미지를 저장
-        output_path = './remove_grid_images/processed_image.jpg'
+        output_path = './remove_grid_images/processed_image3.jpg'
         cv.imwrite(output_path, img)
         print(f'Processed image saved to {output_path}')
+
