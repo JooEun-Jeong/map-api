@@ -26,6 +26,26 @@ Session = sessionmaker(bind=engine)
 # SQL 파일 경로 설정
 sql_file_path = './dangsan.sql'
 
+# 컬럼 존재 여부를 먼저 확인하기
+def add_geometry_column_if_not_exists():
+    check_column_query = """
+        SELECT column_name 
+        FROM information_schema.columns 
+        WHERE table_name = 'dangsan' AND column_name = 'wkb_geometry';
+    """
+    add_column_query = """
+        SELECT AddGeometryColumn('public', 'dangsan', 'wkb_geometry', 4326, 'MULTIPOLYGON', 2);
+    """
+    
+    with engine.connect() as connection:
+        result = connection.execute(text(check_column_query))
+        if not result.fetchone():
+            # 'wkb_geometry' 컬럼이 없을 때만 추가
+            try:
+                connection.execute(text(add_column_query))
+            except SQLAlchemyError as e:
+                print(f"Error executing statement: {add_column_query}")
+                print(str(e))
 
 # SQL 파일 읽기 및 처리
 def load_sql_file(sql_file_path):
@@ -61,6 +81,8 @@ def load_sql_file(sql_file_path):
         finally:
             session.close()  # 세션 종료
 
+
+add_geometry_column_if_not_exists()
 # 초기 SQL 파일 로드
 load_sql_file(sql_file_path)
 
