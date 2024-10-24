@@ -45,7 +45,7 @@ class FlaskAppTestCase(unittest.TestCase):
 
     def test_get_coordinates_from_past_address_valid_params(self):
         # 정상적인 과거 주소의 카테고리와 지번으로 좌표 요청을 테스트
-        response = self.app.get('/get_coordinates_from_past_address?category=북면&jibun=1')
+        response = self.app.get('/get_coordinates_from_past_address?category=전&jibun=1')
         self.assertIn(response.status_code, [200, 404])
         if response.status_code == 200:
             data = json.loads(response.data)
@@ -54,7 +54,7 @@ class FlaskAppTestCase(unittest.TestCase):
 
     def test_get_current_address_from_past_address(self):
         # 정상적인 과거 주소로 현재 주소를 요청을 테스트
-        response = self.app.post('/get_current_address_from_past_address', data=json.dumps({'past_address': '경기도 시흥군 북면 당산리 1 1'}), content_type='application/json')
+        response = self.app.post('/get_current_address_from_past_address', data=json.dumps({'past_address': '경기도 시흥군 북면 당산리 전 1'}), content_type='application/json')
         self.assertIn(response.status_code, [200, 404])
         if response.status_code == 200:
             data = json.loads(response.data)
