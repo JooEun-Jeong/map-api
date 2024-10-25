@@ -17,10 +17,13 @@
 `.env` 파일에 다음 변수들이 설정되어 있는지 확인하세요:
 - `KAKAO_API_KEY`: Kakao REST API 키.
 - `DB_URL`: 데이터베이스에 연결하기 위한 URL.
+- `ENV` : development | production  
+
+.env.sample 파일을 이용하여 .env를 작성하시면 됩니다.
 
 ## 사용 가능한 엔드포인트  
 
-base url: `http://52.195.211.158:5501/`  
+Base url(Deployed in AWS): `http://52.195.211.158:5501/`  
 
 ### 1. `/get_address` (GET)
 - **설명**: 주어진 위도와 경도를 사용하여 현재 주소를 조회합니다.
