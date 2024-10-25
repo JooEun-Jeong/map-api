@@ -11,12 +11,13 @@
 #### 시스템 구성도
 ```mermaid
 graph LR
-    User[User] --> FlaskAPI[Flask API Server]
-    FlaskAPI --> PostGIS[PostGIS]
-    FlaskAPI --> KakaoAPI[Kakao Map API]
-    FlaskAPI --> QGIS[QGIS Tool]
-    QGIS --> CadastralMaps[Cadastral Maps]
-    CadastralMaps --> PostGIS
+    User[User] -->|Inputs latitude/longitude| FlaskAPI[Flask API Server]
+    FlaskAPI -->|Queries spatial data| PostGIS[PostGIS Database]
+    FlaskAPI -->|Fetches location info| KakaoAPI[Kakao Map API]
+    FlaskAPI -->|Processes georeferencing| QGIS[QGIS Tool]
+    QGIS -->|Aligns historical maps| CadastralMaps[Cadastral Maps]
+    CadastralMaps -->|Stores georeferenced data| PostGIS
+    FlaskAPI -->|Returns JSON response| User
 
     style User fill:#b3e5fc,stroke:#0288d1,stroke-width:2px
     style FlaskAPI fill:#c8e6c9,stroke:#388e3c,stroke-width:2px
