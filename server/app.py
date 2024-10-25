@@ -86,6 +86,83 @@ add_geometry_column_if_not_exists()
 # 초기 SQL 파일 로드
 load_sql_file(sql_file_path)
 
+@app.route('/', methods=['GET'])
+def index():
+    result = """
+    <html>
+    <head>
+        <style>
+            body {
+                font-family: 'Noto Sans', sans-serif;
+                font-size: 14px;
+            }
+            .title {
+                font-weight: bold;
+                font-size: 16px;
+            }
+            .main {
+                font-weight: bold;
+                font-size: 18px;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="main">현재 주소와 일제 강점기 주소 매칭 API</div>
+        <p>이 Flask 애플리케이션은 지리적 좌표를 기반으로 현재 및 과거 주소 정보를 조회할 수 있는 여러 API들을 제공합니다. <b>현재는 영등포구 일부 지역만 확인 가능합니다.</b></p>
+        <br />
+        <div class="title">1. /get_address (GET)</div>
+        <p>
+        - 설명: 주어진 위도와 경도를 사용하여 현재 주소를 조회합니다.<br>
+        - 파라미터:<br>
+            &emsp;- latitude *(필수): 위치의 위도.<br>
+            &emsp;- longitude *(필수): 위치의 경도.<br>
+        - 응답: 현재 주소와 도로명 주소(가능한 경우)를 반환합니다.<br>
+        - 에러 처리: 파라미터가 없거나 유효하지 않으면 400을 반환하고, 주소를 찾을 수 없으면 404를 반환합니다.<br>
+        </p>
+
+        <div class="title">2. /get_past_address (GET)</div>
+        <p>
+        - 설명: 주어진 위도와 경도를 기반으로 과거 주소 정보를 조회합니다.<br>
+        - 파라미터:<br>
+            &emsp;- latitude *(필수): 위치의 위도.<br>
+            &emsp;- longitude *(필수): 위치의 경도.<br>
+        - 응답: 주어진 좌표와 가장 가까운 과거 주소를 반환합니다.<br>
+        - 에러 처리: 좌표가 없거나 유효하지 않으면 400을 반환하고, 일치하는 데이터가 없으면 404를 반환합니다.<br>
+        </p>
+
+        <div class="title">3. /get_current_and_past_address (GET)</div>
+        <p>
+        - 설명: 주어진 위도와 경도에 대해 현재 주소와 과거 주소를 모두 조회합니다.<br>
+        - 파라미터:<br>
+            &emsp;- latitude *(필수): 위치의 위도.<br>
+            &emsp;- longitude *(필수): 위치의 경도.<br>
+        - 응답: 현재 주소와 과거 주소를 모두 반환합니다.<br>
+        - 에러 처리: /get_address와 /get_past_address 라우터의 에러 처리를 사용합니다.<br>
+        </p>
+
+        <div class="title">4. /get_coordinates_from_past_address (GET)</div>
+        <p>
+        - 설명: 주어진 _1 (토지 유형)과 _2 (지번)에 해당하는 과거 주소의 좌표를 반환합니다.<br>
+        - 파라미터:<br>
+            &emsp;- category (_1) *(필수): 토지 유형.<br>
+            &emsp;- jibun (_2) *(필수): 지번 번호.<br>
+        - 응답: 과거 주소의 위도와 경도를 반환합니다.<br>
+        - 에러 처리: _2 값이 유효하지 않으면 400을 반환하고, 일치하는 데이터가 없으면 404를 반환합니다.<br>
+        </p>
+
+        <div class="title">5. /get_current_address_from_past_address (POST)</div>
+        <p>
+        - 설명: 과거 주소를 입력받아 현재 주소를 반환합니다.<br>
+        - 파라미터:<br>
+            &emsp;- past_address *(JSON 형식, 필수): 과거 주소 (형식: "경기도 시흥군 북면 당산리 _1 _2").<br>
+        - 응답: 현재 주소와 도로명 주소(가능한 경우)를 반환합니다.<br>
+        - 에러 처리: past_address가 없거나 잘못된 형식인 경우 400을 반환하고, 데이터 조회 실패 시 에러를 처리합니다.<br>
+        </p>
+    </body>
+    </html>
+    """
+    return result, 200, {'Content-Type': 'text/html; charset=utf-8'}
+
 @app.route('/get_address', methods=['GET'])
 def get_address():
     # 요청 파라미터에서 위도(latitude)와 경도(longitude) 가져오기
