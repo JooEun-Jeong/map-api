@@ -117,6 +117,7 @@ def index():
             &emsp;- latitude *(필수): 위치의 위도.<br>
             &emsp;- longitude *(필수): 위치의 경도.<br>
         - 응답: 현재 주소와 도로명 주소(가능한 경우)를 반환합니다.<br>
+        - 예시: <a href="http://cadastral-map-api.store/get_address?latitude=37.5384&longitude=126.9047">(37.5384, 126.9047)</a><br>
         - 에러 처리: 파라미터가 없거나 유효하지 않으면 400을 반환하고, 주소를 찾을 수 없으면 404를 반환합니다.<br>
         </p>
 
@@ -127,6 +128,7 @@ def index():
             &emsp;- latitude *(필수): 위치의 위도.<br>
             &emsp;- longitude *(필수): 위치의 경도.<br>
         - 응답: 주어진 좌표와 가장 가까운 과거 주소를 반환합니다.<br>
+        - 예시: <a href="http://cadastral-map-api.store/get_past_address?latitude=37.5384&longitude=126.9047">(37.5384, 126.9047)</a><br>
         - 에러 처리: 좌표가 없거나 유효하지 않으면 400을 반환하고, 일치하는 데이터가 없으면 404를 반환합니다.<br>
         </p>
 
@@ -137,6 +139,7 @@ def index():
             &emsp;- latitude *(필수): 위치의 위도.<br>
             &emsp;- longitude *(필수): 위치의 경도.<br>
         - 응답: 현재 주소와 과거 주소를 모두 반환합니다.<br>
+        - 예시: <a href="http://cadastral-map-api.store/get_current_and_past_address?latitude=37.5384&longitude=126.9047">(37.5384, 126.9047)</a><br>
         - 에러 처리: /get_address와 /get_past_address 라우터의 에러 처리를 사용합니다.<br>
         </p>
 
@@ -144,9 +147,10 @@ def index():
         <p>
         - 설명: 주어진 _1 (토지 유형)과 _2 (지번)에 해당하는 과거 주소의 좌표를 반환합니다.<br>
         - 파라미터:<br>
-            &emsp;- category (_1) *(필수): 토지 유형.<br>
-            &emsp;- jibun (_2) *(필수): 지번 번호.<br>
+            &emsp;- category (_1) *(필수): 토지 유형: 전, 집터, 잡, 산림<br>
+            &emsp;- jibun (_2) *(필수): 지번 번호: (숫자)<br>
         - 응답: 과거 주소의 위도와 경도를 반환합니다.<br>
+        - 예시: <a href="http://cadastral-map-api.store/get_coordinates_from_past_address?category=전&jibun=99">전 99</a><br>
         - 에러 처리: _2 값이 유효하지 않으면 400을 반환하고, 일치하는 데이터가 없으면 404를 반환합니다.<br>
         </p>
 
