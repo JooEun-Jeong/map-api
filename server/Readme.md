@@ -25,8 +25,6 @@
 
 ## 사용 가능한 엔드포인트
 
-Base url(Deployed in AWS): `http://cadastral-map-api.store`
-
 ### 1. `/get_address` (GET)
 
 - **설명**: 주어진 위도와 경도를 사용하여 현재 주소를 조회합니다.
